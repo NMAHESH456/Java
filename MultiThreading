@@ -1,1 +1,264 @@
+1. What is a Thread?
+  A thread is the smallest unit of execution in a program.
+  Think of it as a single sequence of instructions that runs independently within a process.
+  Process: The application itself (has its own memory space).
+  Thread: A lightweight sub-unit inside a process that shares the same memory with other threads in the same process.
+
+2. What is Multithreading?
+  Multithreading is the ability of a program to execute multiple threads concurrently.
+  It improves CPU utilization.
+  Threads share the same heap memory but have their own stack.
+  Java has built-in support for multithreading (java.lang.Thread, java.lang.Runnable, java.util.concurrent).
+  Example analogy:
+  Imagine a restaurant (process).
+  Each waiter (thread) can take orders from different customers at the same time.
+  All waiters share the same kitchen (heap memory), but each has their own order pad (stack memory).
+
+3. Benefits
+  Better CPU utilization – Especially for I/O bound tasks.
+  Responsiveness – UI remains responsive while background work runs.
+  Parallelism – Multiple tasks can actually run at the same time on multi-core CPUs.
+
+4. Ways to Create Threads in Java
+  Method 1: Extend Thread class
+
+  class MyThread extends Thread {
+      @Override
+      public void run() {
+          System.out.println("Thread running: " + Thread.currentThread().getName());
+      }
+  }
+  
+  public class Main {
+      public static void main(String[] args) {
+          MyThread t1 = new MyThread();
+          t1.start(); // starts a new thread
+      }
+  }
+  Method 2: Implement Runnable interface
+
+  class MyRunnable implements Runnable {
+      public void run() {
+          System.out.println("Runnable running: " + Thread.currentThread().getName());
+      }
+  }
+  
+  public class Main {
+      public static void main(String[] args) {
+          Thread t1 = new Thread(new MyRunnable());
+          t1.start();
+      }
+  }
+  Method 3: Using Lambda with Runnable
+
+  public class Main {
+      public static void main(String[] args) {
+          Thread t1 = new Thread(() -> 
+          System.out.println("Lambda thread: " + Thread.currentThread().getName()));
+          t1.start();
+      }
+  }
+  Method 4: Using ExecutorService (Thread Pool)
+ 
+  import java.util.concurrent.*;
+  public class Main {
+      public static void main(String[] args) {
+          ExecutorService executor = Executors.newFixedThreadPool(2);
+          executor.execute(() -> System.out.println("Thread pool: " + Thread.currentThread().getName()));
+          executor.shutdown();
+      }
+  }
+
+  5. Important Thread Methods
+  Method	                 Description
+  start()	         Starts a new thread and calls run() internally
+  run()	           Contains the code that the thread will execute
+  sleep(ms)      	 Makes the current thread pause for given milliseconds
+  join()	         Waits for another thread to finish
+  yield()	         Suggests the scheduler to give other threads a chance
+  interrupt()	     Interrupts a sleeping or waiting thread
+
+6. Thread Lifecycle
+
+New – Thread object created but not started.
+Runnable – Ready to run, waiting for CPU.
+Running – Currently executing.
+Blocked/Waiting – Waiting for resource or signal.
+Terminated – Finished execution.
+
+7. Real-Time Use Case
+Web Server: Each request handled by a separate thread.
+Chat Application: One thread listens for messages, another sends messages.
+Game Engine: Separate threads for rendering, physics, AI, and sound.
+
+⚙️ 10 Basic Multithreading Questions (Level: Beginner)
+
+1-What is a thread in Java?
+  Definition: Smallest unit of execution in a Java program.
+  Belongs to: A process — multiple threads can run inside one process.
+  Memory: Shares heap memory with other threads but has its own stack.
+  Purpose: Enables concurrent execution for better performance.
+  Example: In a music player — one thread plays music, another updates the UI
+
+2-How to create a thread using Thread and Runnable?
+  refer above
+
+3-Difference between start() and run() methods
+        start()                                                    	run()
+  Creates a new thread and executes run() inside it.  	  Executes run() in the current thread, no new thread created.
+  Non-blocking (returns immediately).	                    Blocking (runs sequentially).
+  Used to start a thread properly.	                      Used for direct method call (not recommended for starting threads).
+
+4-What is the lifecycle/states of a thread in Java?
+  refer above
+
+5-What is the use of Thread.sleep()?
+  Pauses the current thread for a given time (in milliseconds).
+  Purpose: Control CPU usage, simulate delays, wait for resources.
+  Throws InterruptedException.
+  Example:
+  Thread.sleep(2000); // sleep for 2 seconds
+
+6-What is a daemon thread?
+  A daemon thread in Java is a low-priority, background thread that provides support services to user threads.
+  JVM exits when only daemon threads are left.
+  Used for background tasks (garbage collection, monitoring).
+  Example:
+  Thread t = new Thread(...);
+  t.setDaemon(true);
+
+7-How does thread priority work in Java?
+  Each thread has a priority (1 to 10).
+  Thread.MIN_PRIORITY = 1
+  Thread.NORM_PRIORITY = 5 (default)
+  Thread.MAX_PRIORITY = 10
+  Higher priority suggests to the scheduler to run first, but not guaranteed (depends on OS scheduler).
+
+8-What is thread scheduling?
+  Process of deciding which thread to run next.
+  Java uses preemptive scheduling → CPU chooses threads based on priority & availability.
+  Actual scheduling behavior depends on the OS thread scheduler.
+
+9-What is the difference between yield(), sleep(), and join()?
+
+  Method	                   Purpose                                      	Effect on CPU
+  yield()	      Suggests to scheduler to give other threads a chance.      May pause temporarily, but not guaranteed.
+  sleep(ms)    	Pauses thread for fixed time.	                             Gives CPU to other threads.
+  join()	      Waits for another thread to finish.	                       Current thread blocked until target thread ends.
+
+10-What are the different ways to stop a thread?
+  Old way (deprecated): stop() → Don’t use (unsafe).
+  Safe ways:
+  Use a flag variable to signal the thread to stop.
+  Use interrupt() to break from sleep() or wait().
+  Let run() method complete naturally.
+  Example:
+  class MyTask implements Runnable {
+      private volatile boolean running = true;
+      public void run() {
+          while (running) {
+              System.out.println("Running...");
+          }
+      }
+      public void stop() { running = false; }
+  }
+
+
+⚙️ 10 Intermediate Multithreading Questions (Level: Medium)
+
+11-What is synchronization and how does it prevent race conditions?
+  Synchronization: Mechanism to control access to shared resources by multiple threads.
+  Race Condition: When two or more threads modify a shared resource at the same time → inconsistent results.
+  How it works: Synchronization ensures only one thread accesses the resource at a time (using monitor/lock).
+  Example:
+  public synchronized void increment() { count++; }
+  Prevents multiple threads from updating count simultaneously.
+
+12-What is the difference between object lock and class lock?
+        Object Lock	                                                  Class Lock
+  Acquired when a non-static synchronized method/block is used. 	Acquired when a static synchronized method/block is used.
+  Lock is per object instance.                                  	Lock is per Class object (shared across all instances).
+  Allows multiple threads on different objects.	                  Only one thread can access any static synchronized method of the class.
+
+13-What is a deadlock and how can it be avoided?
+  Deadlock: Two or more threads are waiting on each other’s locks → none proceed.
+  Example:
+  Thread A holds Lock 1, waits for Lock 2.
+  Thread B holds Lock 2, waits for Lock 1.
+  Avoidance:
+  Acquire locks in a fixed order.
+  Use tryLock() with timeout (ReentrantLock).
+  Keep lock-holding time minimal.
+
+14-What is the difference between synchronized and ReentrantLock?
+         synchronized	                                     ReentrantLock
+    Implicit locking via synchronized keyword.     	Explicit locking via lock() and unlock().
+    Auto-releases lock when method/block ends.	    Must manually release lock in finally.
+    Cannot try for lock.                          	Can use tryLock() with timeout.
+    No fairness option.                            	Can set fairness policy.
+    Simpler to use.                                	More flexible, powerful.
+
+15-What is a volatile variable and how does it work?
+  Volatile: Keyword that ensures changes to a variable are immediately visible to all threads.
+  Prevents caching in CPU registers/thread-local memory.
+  Does not guarantee atomicity (use for visibility, not synchronization).
+  Example:
+  private volatile boolean running = true;
+  ✅ Other threads will immediately see changes to running.
+
+16-What is the use of wait(), notify(), and notifyAll()?
+  wait(): Makes the thread release the lock and wait until notified.
+  notify(): Wakes one waiting thread.
+  notifyAll(): Wakes all waiting threads.
+  Must be called from a synchronized block/method.
+  Producer-Consumer Example:
+  synchronized(obj) {
+      while(list.isEmpty()) obj.wait();
+      obj.notify();
+  }
+
+17-What is thread-safe code? How do you write one?
+  Thread-safe: Code that works correctly when accessed by multiple threads.
+  Ways to achieve:
+  Synchronization (synchronized).
+  Locks (ReentrantLock).
+  Immutable objects.
+  Atomic classes (AtomicInteger).
+  Concurrent collections (ConcurrentHashMap).
+
+18-How does ThreadLocal work in Java?
+  Provides thread-local storage → each thread has its own copy of a variable.
+  Prevents sharing between threads.
+  Example:
+  private static ThreadLocal<Integer> tl = ThreadLocal.withInitial(() -> 0);
+  tl.set(5); // value for this thread only
+  ✅ Useful for user sessions, DB connections, formatters.
+
+19-What are the advantages of using ExecutorService?
+  Thread pooling → reuse threads, reduce overhead.
+  Task management → submit, cancel, schedule tasks.
+  Better resource management.
+  Callable support → return values from threads.
+  Graceful shutdown via shutdown() / shutdownNow().
+
+20-What is the difference between Runnable and Callable?
+            Runnable	                                 Callable
+  run() method → no return value.	        call()  method → returns a value (Future).
+  Cannot throw checked exceptions.	      Can throw checked exceptions.
+  Used with Thread or ExecutorService.	  Used with ExecutorService.
+  Simpler, for tasks with no result.	    For tasks that produce results or may fail.
+
+
+
+🚀 10 Advanced Multithreading Questions (Level: Expert)
+21-What is the Fork/Join framework in Java?
+22-How do Future and CompletableFuture differ?
+23-What is a CountDownLatch and how is it used?
+24-What is a CyclicBarrier? When should you use it?
+25-What is a Semaphore and what are its use cases?
+26-How to handle exceptions in multithreaded code?
+27-How does the BlockingQueue help in producer-consumer problems?
+28-What is false sharing and how does it affect multithreading performance?
+29-What are some best practices for concurrent programming in Java?
+30-How does the Java Memory Model affect multithreaded applications?
 
